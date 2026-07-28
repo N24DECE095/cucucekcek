@@ -5,10 +5,10 @@
 #include "GiaoDien.h"
 
 //=====================================================
-// QU?N LÝ L?P
+// QU?N Lï¿½ L?P
 //=====================================================
 
-// tìm v? trí l?p theo mã
+// tï¿½m v? trï¿½ l?p theo mï¿½
 int TimLopTheoMa(DS_LOP &ds, const string &malop);
 
 // l?y con tr? l?p
@@ -21,26 +21,26 @@ bool SuaLop(DS_LOP &ds,
             const string &malop,
             const Lop &moi);
 
-// gi?i phóng
+// gi?i phï¿½ng
 void GiaiPhongDSLop(DS_LOP &ds);
 
 // in
 void InDSLop(DS_LOP &ds);
 
 //=====================================================
-// QU?N LÝ SINH VIÊN
+// QU?N Lï¿½ SINH VIï¿½N
 //=====================================================
 
 // t?o node
 PTRSV TaoNodeSV(const Sinhvien &sv);
 
-// tìm
+// tï¿½m
 PTRSV TimSVTheoMASV(PTRSV First,
                     const string &masv);
                     
 PTRSV LaySinhVien(DS_LOP &ds,
                   const string &masv);
-// chèn tang theo MASV
+// chï¿½n tang theo MASV
 void Insert_Order_SV(PTRSV &First,
                      const Sinhvien &sv);
 
@@ -58,10 +58,10 @@ bool HieuChinhSinhVien(Lop &lop,
 // d?m
 int DemSinhVien(PTRSV First);
 
-// gi?i phóng
+// gi?i phï¿½ng
 void GiaiPhongDSSV(PTRSV &First);
 
 // in
 void InDanhSachSinhVien(PTRSV First);
 
-#endifs
+#endif

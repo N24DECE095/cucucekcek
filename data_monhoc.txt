@@ -1,31 +1,31 @@
 30
-INF201|Nhap mon lap trinh|2|1
-CHE101|Hoa hoc dai cuong|2|1
-POL102|Kinh te chinh tri Mac Lenin|2|0
-INF301|Cau truc du lieu va giai thuat|3|1
-ENG101|Anh van 1|3|0
-MAT101|Giai tich 1|3|0
-INF302|Co so du lieu|3|1
-POL101|Triet hoc Mac Lenin|3|0
-INF303|Lap trinh huong doi tuong|3|1
-MAT102|Giai tich 2|3|0
-PHY101|Vat ly dai cuong|2|1
-INF401|He dieu hanh|3|1
-ENG102|Anh van 2|3|0
-MAT103|Dai so tuyen tinh|3|0
-INF402|Mang may tinh|3|1
-SOC101|Giao duc the chat 1|0|1
-POL103|Tu tuong Ho Chi Minh|2|0
-INF403|Ky thuat lap trinh|2|1
-MAT104|Xac suat thong ke|3|0
-INF404|Nhap mon tri tue nhan tao|3|1
-ENG201|Anh van chuyen nganh|2|0
-SOC102|Giao duc the chat 2|0|1
-INF501|Cong nghe phan mem|3|1
-INF502|Lap trinh Web|2|1
-SOC201|Giao duc quoc phong an ninh|0|2
 INF503|Lap trinh Mobile|2|1
-INF504|An toan thong tin|3|1
-INF505|Do hoa may tinh|3|1
-INF601|Do an chuyen nganh|0|3
+INF302|Co so du lieu|3|1
+ENG102|Anh van 2|3|0
+CHE101|Hoa hoc dai cuong|2|1
+ENG101|Anh van 1|3|0
+INF201|Nhap mon lap trinh|2|1
+ENG201|Anh van chuyen nganh|2|0
+INF301|Cau truc du lieu va giai thuat|3|1
+INF403|Ky thuat lap trinh|2|1
+INF401|He dieu hanh|3|1
+INF303|Lap trinh huong doi tuong|3|1
+INF402|Mang may tinh|3|1
+INF501|Cong nghe phan mem|3|1
+INF404|Nhap mon tri tue nhan tao|3|1
+INF502|Lap trinh Web|2|1
+MAT104|Xac suat thong ke|3|0
 INF602|Khoa luan tot nghiep|0|5
+INF505|Do hoa may tinh|3|1
+INF504|An toan thong tin|3|1
+INF601|Do an chuyen nganh|0|3
+MAT102|Giai tich 2|3|0
+MAT101|Giai tich 1|3|0
+MAT103|Dai so tuyen tinh|3|0
+POL103|Tu tuong Ho Chi Minh|2|0
+POL101|Triet hoc Mac Lenin|3|0
+PHY101|Vat ly dai cuong|2|1
+POL102|Kinh te chinh tri Mac Lenin|2|0
+SOC102|Giao duc the chat 2|0|1
+SOC101|Giao duc the chat 1|0|1
+SOC201|Giao duc quoc phong an ninh|0|2
