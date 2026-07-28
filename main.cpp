@@ -21,19 +21,23 @@
 #include "Monhoc.h"
 #include "Loptinchi.h"
 #include "XuLyFile.h"
+#include "QuanLyDiem.h"
 
 // ===================== BIẾN TOÀN CỤC =====================
 treeMH cayMH = NULL;
 DS_LTC dsLtc;
+DS_LOP dsLop;
 
 // ===================== KHỞI TẠO / DỌN DẸP =====================
 void KhoiTao() {
     cayMH = NULL;
     KhoiTaoDSLTC(dsLtc);
+    KhoiTaoDSLop(dsLop);
 }
 
 void DonDep() {
     HuyDSLTC(dsLtc);
+    GiaiPhongDSLop(dsLop);
     GiaiPhongCayMH(cayMH);
 }
 
@@ -63,20 +67,21 @@ static void ManHinhChao() {
 static int HienMenuChinhTask1() {
     clrscr();
     VeKhungCoTieuDe(2, 1, 118, 28, "TASK 1: MON HOC + LOP TIN CHI - MENU CHINH");
-    const char *items[6] = {
+    const char *items[7] = {
         "1. Quan ly Mon hoc            (chuc nang e, f)   ",
         "2. Quan ly Lop tin chi        (chuc nang a)      ",
         "3. Huy LTC tu dong khi SV<min (chuc nang h)      ",
-        "4. Luu du lieu vao file                          ",
-        "5. Doc du lieu tu file                           ",
-        "6. Thoat chuong trinh                            "
+        "4. Nhap diem / Hieu chinh diem                   ",
+        "5. Luu du lieu vao file                          ",
+        "6. Doc du lieu tu file                           ",
+        "7. Thoat chuong trinh                            "
     };
     gotoxy(30, 5);
     SetColor(MAU_VANG_SANG);
     printf("Dung phim mui ten LEN/XUONG va ENTER de chon");
     SetColor(MAU_TRANG);
-    int chon = XuLyMenu(30, 8, items, 6);
-    return chon + 1;    // trả về 1..6
+    int chon = XuLyMenu(30, 8, items, 7);
+    return chon + 1;    // trả về 1..7
 }
 
 // ===================== MAIN =====================
@@ -103,7 +108,8 @@ int main() {
             case 1: MenuQuanLyMonhoc(cayMH, dsLtc); break;
             case 2: MenuMoLopTinChi(dsLtc, cayMH); break;
             case 3: HuyLopTinChiTuDong(dsLtc); break;
-            case 4: {
+            case 4: NhapDiem(dsLtc, dsLop, cayMH); break;
+            case 5: {
                 clrscr();
                 gotoxy(30, 12);
                 SetColor(MAU_XANH_LA_SANG);
@@ -114,7 +120,7 @@ int main() {
                 HienThongBaoThanhCong("Da luu xong.");
                 break;
             }
-            case 5: {
+            case 6: {
                 clrscr();
                 gotoxy(30, 12);
                 SetColor(MAU_XANH_LA_SANG);
@@ -127,12 +133,12 @@ int main() {
                 HienThongBaoThanhCong("Da doc xong.");
                 break;
             }
-            case 6:
+            case 7:
             case 0:
             case -1:
                 break;   // thoát
         }
-    } while (chon != 6 && chon != -1);
+    } while (chon != 7 && chon != -1);
 
     // Tự động lưu trước khi thoát
     clrscr();
