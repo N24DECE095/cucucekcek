@@ -1,875 +1,716 @@
 #include "QuanLyDiem.h"
 #include <iomanip>
 
-static string TrimString(const string &s)
-{
-    int start = 0;
-    int end = (int)s.size() - 1;
-    while (start <= end && (s[start] == ' ' || s[start] == '\t')) start++;
-    while (end >= start && (s[end] == ' ' || s[end] == '\t')) end--;
-    if (start > end) return "";
-    return s.substr(start, end - start + 1);
-}
-
-static string CatChuoi(const string &s, int maxLen)
-{
-    if ((int)s.size() <= maxLen)
-        return s;
-    if (maxLen <= 3)
-        return s.substr(0, maxLen);
-    return s.substr(0, maxLen - 3) + "...";
-}
-
-static Loptinchi* TimLTCTheoThongTin(DS_LTC &ds,
-                                     const string &nienkhoa,
-                                     int hocky,
-                                     const string &mamh,
-                                     int nhom)
-{
-    string nk = TrimString(nienkhoa);
-    string mh = TrimString(mamh);
+static Loptinchi* TimLTCTheoThongTin(DS_LTC &ds, const string &nienkhoa, int hocky, const string &mamh, int nhom) {
+    string nk = nienkhoa;
+    string mh = mamh;
     ToUpper(nk);
     ToUpper(mh);
 
-    for (int i = 0; i < ds.n; i++)
-    {
-        if (ds.nodes[i] == NULL)
-            continue;
+    for (int i = 0; i < ds.n; i++) {
+        if (ds.nodes[i] == NULL) continue;
 
-        string curNK = TrimString(ds.nodes[i]->NIENKHOA);
-        string curMH = TrimString(ds.nodes[i]->MAMH);
+        string curNK = ds.nodes[i]->NIENKHOA;
+        string curMH = ds.nodes[i]->MAMH;
         ToUpper(curNK);
         ToUpper(curMH);
 
-        if (curNK == nk &&
-            ds.nodes[i]->HOCKY == hocky &&
-            curMH == mh &&
-            ds.nodes[i]->NHOM == nhom)
-        {
+        if (curNK == nk && ds.nodes[i]->HOCKY == hocky && curMH == mh && ds.nodes[i]->NHOM == nhom) {
             return ds.nodes[i];
         }
     }
-
     return NULL;
 }
 
-static string TimTenMonHoc(treeMH root, const string &mamh)
-{
-    if (root == NULL)
-        return "";
 
-    if (root->mh.MAMH == mamh)
-        return root->mh.TENMH;
 
-    if (mamh < root->mh.MAMH)
-        return TimTenMonHoc(root->left, mamh);
-
-    return TimTenMonHoc(root->right, mamh);
+// Hàm so sánh Sinh viên theo TÊN rồi tới HỌ (theo chuẩn tài liệu giảng viên)
+static bool SoSanhSV(PTRSV sv1, PTRSV sv2) {
+    if (sv1 == NULL) return false;
+    if (sv2 == NULL) return true;
+    int cmpTen = StrCmpNoCase(sv1->sv.TEN, sv2->sv.TEN);
+    if (cmpTen < 0) return true;
+    if (cmpTen > 0) return false;
+    return StrCmpNoCase(sv1->sv.HO, sv2->sv.HO) < 0;
 }
 
-static string ChuyenDiemSangChuoi(float diem)
-{
-    char buf[20];
-    if (diem < 0)
-        return " ";
-    sprintf(buf, "%.1f", diem);
-    return string(buf);
-}
-
-static void VeKhungNho(int x1, int y1, int x2, int y2, const char *title)
-{
-    VeKhung(x1, y1, x2, y2);
-    if (title != NULL)
-    {
-        int len = strlen(title);
-        int mid = (x1 + x2) / 2 - len / 2;
-        gotoxy(mid, y1);
-        SetColor(MAU_VANG_SANG);
-        cout << title;
-        SetColor(MAU_TRANG);
+// Thuật toán sắp xếp danh sách đăng ký theo Tên + Họ sinh viên
+static void SapXepDSRegistered(PTRDK *active, int total, DS_LOP &ds_lop) {
+    for (int i = 0; i < total - 1; i++) {
+        for (int j = i + 1; j < total; j++) {
+            PTRSV sv1 = LaySinhVien(ds_lop, active[i]->dk.MASV);
+            PTRSV sv2 = LaySinhVien(ds_lop, active[j]->dk.MASV);
+            if (!SoSanhSV(sv1, sv2)) {
+                PTRDK temp = active[i];
+                active[i] = active[j];
+                active[j] = temp;
+            }
+        }
     }
 }
 
-static void VeBangLopTinChi(DS_LTC &ds_ltc,
-                            treeMH root,
-                            PhanTrang &pt,
-                            int x1, int y1, int x2, int y2)
-{
-    VeKhung(x1, y1, x2, y2);
+// ============================================================================
+// CHỨC NĂNG QUẢN LÝ ĐIỂM
+// ============================================================================
 
-    gotoxy(x1 + 2, y1 + 1);
-    SetColor(MAU_XANH_NHAT_SANG);
-    cout << "BANG TRA CUU LTC";
-    SetColor(MAU_TRANG);
+void NhapDiemLTC(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root) {
+    clrscr();
+    VeKhungCoTieuDe(30, 7, 90, 21, "NHAP / CAP NHAT DIEM LOP TIN CHI");
 
-    gotoxy(x1 + 2, y1 + 3);
-    cout << left << setw(8) << "MALTC";
-    gotoxy(x1 + 10, y1 + 3);
-    cout << left << setw(10) << "MAMH";
-    gotoxy(x1 + 20, y1 + 3);
-    cout << left << setw(35) << "TEN MH";
-    gotoxy(x1 + 56, y1 + 3);
-    cout << left << setw(16) << "NIENKHOA";
-    gotoxy(x1 + 72, y1 + 3);
-    cout << left << setw(6) << "HK";
-    gotoxy(x1 + 80, y1 + 3);
-    cout << left << setw(8) << "NHOM";
+    string nienkhoa;
+    int hocky = 0;
+    int nhom = 0;
+    string mamh;
 
-    int total = 0;
-    for (int i = 0; i < ds_ltc.n; i++)
-    {
-        if (ds_ltc.nodes[i] != NULL)
-            total++;
-    }
+    gotoxy(35, 10);
+    printf("Nien khoa (vd: 2025-2026): ");
+    NhapMa(nienkhoa, 15);
+    ToUpper(nienkhoa);
+    if (nienkhoa.empty()) return;
 
-    if (total == 0)
-    {
-        gotoxy(x1 + 2, y1 + 6);
-        cout << "Chua co lop tin chi nao.";
+    gotoxy(35, 12);
+    printf("Hoc ky (1-3)            : ");
+    NhapSo(hocky);
+
+    gotoxy(35, 14);
+    printf("Nhom                    : ");
+    NhapSo(nhom);
+
+    gotoxy(35, 16);
+    printf("Ma mon hoc              : ");
+    NhapMa(mamh, 15);
+    ToUpper(mamh);
+    if (mamh.empty()) return;
+
+    Loptinchi *ltc = TimLTCTheoThongTin(ds_ltc, nienkhoa, hocky, mamh, nhom);
+    if (ltc == NULL) {
+        HienThongBaoLoi("Khong tim thay Lop tin chi voi thong tin tren!");
+        ChoPhimBatKy();
         return;
     }
 
-    int start = LayViTriBatDau(pt);
-    int end = LayViTriKetThuc(pt);
-
-    int idx = 0;
-    int row = 5;
-    for (int i = 0; i < ds_ltc.n; i++)
-    {
-        if (ds_ltc.nodes[i] == NULL)
-            continue;
-
-        if (idx < start || idx > end)
-        {
-            idx++;
-            continue;
-        }
-
-        Loptinchi *ltc = ds_ltc.nodes[i];
-        string tenmh = TimTenMonHoc(root, ltc->MAMH);
-
-        gotoxy(x1 + 2, y1 + row);
-        cout << left << setw(8) << ltc->MALOPTC;
-        gotoxy(x1 + 10, y1 + row);
-        cout << left << setw(10) << ltc->MAMH;
-        gotoxy(x1 + 20, y1 + row);
-        cout << left << setw(35) << CatChuoi(tenmh, 32);
-        gotoxy(x1 + 56, y1 + row);
-        cout << left << setw(16) << ltc->NIENKHOA;
-        gotoxy(x1 + 72, y1 + row);
-        cout << left << setw(6) << ltc->HOCKY;
-        gotoxy(x1 + 80, y1 + row);
-        cout << left << setw(8) << ltc->NHOM;
-
-        row++;
-        idx++;
-    }
-
-    gotoxy(x1 + 2, y2 - 2);
-    SetColor(MAU_VANG_SANG);
-    cout << "Trang " << pt.trangHienTai << "/" << pt.tongTrang;
-    SetColor(MAU_TRANG);
-}
-
-static void VeMenuThaoTac(int x1, int y1, int x2, int y2, int selectedIndex)
-{
-    VeKhung(x1, y1, x2, y2);
-
-    gotoxy(x1 + 2, y1 + 1);
-    SetColor(MAU_XANH_NHAT_SANG);
-    cout << "THAO TAC";
-    SetColor(MAU_TRANG);
-
-    const char *items[] = {
-        "1. Nhap diem",
-        "2. In bang diem",
-        "3. Quay lai"
-    };
-
-    int baseY = y1 + 4;
-    for (int i = 0; i < 3; i++)
-    {
-        gotoxy(x1 + 3, baseY + i * 4);
-        if (i == selectedIndex)
-        {
-            SetBGColor(MAU_XANH_DUONG_SANG);
-            SetColor(MAU_TRANG);
-        }
-        else
-        {
-            SetBGColor(MAU_DEN);
-            SetColor(MAU_TRANG);
-        }
-        cout << items[i];
-    }
-
-    SetBGColor(MAU_DEN);
-    SetColor(MAU_TRANG);
-}
-
-static bool NhapThamSoLopTinChi(string &nienkhoa, int &hocky, string &mamh, int &nhom)
-{
-    // FIX: tăng khoảng cách và đẩy khung nhập sang phải để tách biệt với bảng tra cứu.
-    VeKhungNho(92, 18, 118, 27, "NHAP THONG TIN");
-
-    gotoxy(95, 20);
-    cout << "NIEN KHOA: ";
-    NhapMa(nienkhoa, 20);
-    ToUpper(nienkhoa);
-
-    gotoxy(95, 21);
-    cout << "HOCKY    : ";
-    NhapSo(hocky);
-
-    gotoxy(95, 22);
-    cout << "MAMH     : ";
-    NhapMa(mamh, 20);
-    ToUpper(mamh);
-
-    gotoxy(95, 23);
-    cout << "NHOM     : ";
-    NhapSo(nhom);
-
-    return true;
-}
-
-static void VeBangDiemSinhVien(Loptinchi *ltc,
-                               DS_LOP &ds_lop,
-                               PTRDK *active,
-                               int total,
-                               PhanTrang &pt,
-                               int selectedIndex,
-                               bool allowEdit)
-{
-    clrscr();
-
-    VeKhungCoTieuDe(2, 1, 118, 28, "DANH SACH SINH VIEN");
-
-    gotoxy(4, 3);
-    cout << "Nien khoa : " << ltc->NIENKHOA;
-    gotoxy(32, 3);
-    cout << "Hoc ky    : " << ltc->HOCKY;
-    gotoxy(52, 3);
-    cout << "Mon hoc   : " << ltc->MAMH;
-    gotoxy(84, 3);
-    cout << "Nhom      : " << ltc->NHOM;
-
-    gotoxy(4, 5);
-    cout << "STT";
-    gotoxy(12, 5);
-    cout << "MASV";
-    gotoxy(28, 5);
-    cout << "HO";
-    gotoxy(56, 5);
-    cout << "TEN";
-    gotoxy(90, 5);
-    cout << "DIEM";
-
-    VeDuongNgang(4, 115, 6);
-
-    int start = LayViTriBatDau(pt);
-    int end = LayViTriKetThuc(pt);
-    int y = 8;
-
-    for (int i = start; i <= end; i++)
-    {
-        PTRDK p = active[i];
-        if (p == NULL)
-            continue;
-
-        PTRSV sv = LaySinhVien(ds_lop, p->dk.MASV);
-        string ho = "--";
-        string ten = "--";
-        if (sv != NULL)
-        {
-            ho = sv->sv.HO;
-            ten = sv->sv.TEN;
-        }
-
-        string diemText = ChuyenDiemSangChuoi(p->dk.DIEM);
-
-        if (i == selectedIndex)
-        {
-            SetBGColor(MAU_XANH_DUONG_SANG);
-            SetColor(MAU_TRANG);
-        }
-        else
-        {
-            SetBGColor(MAU_DEN);
-            SetColor(MAU_TRANG);
-        }
-
-        gotoxy(4, y);
-        printf("%-5d %-15s %-20s %-15s %-8s",
-               i + 1,
-               p->dk.MASV.c_str(),
-               ho.c_str(),
-               ten.c_str(),
-               diemText.c_str());
-
-        y += 2;
-    }
-
-    SetBGColor(MAU_DEN);
-    SetColor(MAU_TRANG);
-
-    gotoxy(2, 26);
-    SetColor(MAU_VANG_SANG);
-    if (allowEdit)
-        cout << "ESC: QUAY LAI   <-/->: DOI TRANG   ^/v: CHON DONG   ENTER: NHAP DIEM";
-    else
-        cout << "ESC: QUAY LAI   <-/->: DOI TRANG   ^/v: CHON DONG";
-    SetColor(MAU_TRANG);
-
-    gotoxy(2, 27);
-    cout << "Trang " << pt.trangHienTai << "/" << pt.tongTrang
-         << "   (Tong " << total << " SV)";
-}
-
-static bool HienThiBangDiem(DS_LTC &ds_ltc,
-                            DS_LOP &ds_lop,
-                            treeMH root,
-                            const string &nienkhoa,
-                            int hocky,
-                            const string &mamh,
-                            int nhom,
-                            bool allowEdit)
-{
-    Loptinchi *ltc = TimLTCTheoThongTin(ds_ltc, nienkhoa, hocky, mamh, nhom);
-    if (ltc == NULL)
-    {
-        HienThongBaoLoi("Khong tim thay lop tin chi.");
-        ChoPhimBatKy();
-        return false;
-    }
-
     int total = 0;
-    for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next)
-    {
-        if (!p->dk.HUYDK)
-            total++;
+    for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next) {
+        if (!p->dk.HUYDK) total++;
     }
 
-    if (total == 0)
-    {
-        HienThongBaoLoi("Khong co sinh vien dang ky hien tai.");
+    if (total == 0) {
+        HienThongBaoLoi("Lop tin chi nay chua co sinh vien dang ky!");
         ChoPhimBatKy();
-        return false;
+        return;
     }
 
-    PTRDK *active = new PTRDK[total + 1];
+    PTRDK *active = new PTRDK[total];
     int idx = 0;
-    for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next)
-    {
-        if (!p->dk.HUYDK)
-        {
-            active[idx] = p;
-            idx++;
+    for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next) {
+        if (!p->dk.HUYDK) {
+            active[idx++] = p;
         }
     }
+
+    // Sắp xếp danh sách SV theo Tên + Họ theo chuẩn tài liệu giảng viên
+    SapXepDSRegistered(active, total, ds_lop);
 
     PhanTrang pt;
     KhoiTaoPhanTrang(pt, total, 10);
     int selectedIndex = 0;
 
-    while (true)
-    {
+    while (true) {
         int start = LayViTriBatDau(pt);
         int end = LayViTriKetThuc(pt);
-        if (selectedIndex < start)
-            selectedIndex = start;
-        if (selectedIndex > end)
-            selectedIndex = end;
 
-        VeBangDiemSinhVien(ltc, ds_lop, active, total, pt, selectedIndex, allowEdit);
+        if (selectedIndex < start) selectedIndex = start;
+        if (selectedIndex > end) selectedIndex = end;
+
+        clrscr();
+        VeKhungCoTieuDe(2, 1, 118, 28, "CAP NHAT DIEM LOP TIN CHI");
+
+        treeMH nodeMH = Search(root, ltc->MAMH);
+        string tenMon = (nodeMH != NULL) ? nodeMH->mh.TENMH : "";
+        gotoxy(4, 3);
+        SetColor(MAU_XANH_LA_SANG);
+        printf("Mon: %s (%s) | NK: %s | HK: %d | Nhom: %d",
+               tenMon.c_str(), ltc->MAMH.c_str(), ltc->NIENKHOA.c_str(), ltc->HOCKY, ltc->NHOM);
+        SetColor(MAU_TRANG);
+
+        gotoxy(4, 5);
+        SetColor(MAU_XANH_NHAT_SANG);
+        printf("%-5s | %-12s | %-45s | %-10s", "STT", "MASV", "HO TEN SINH VIEN", "DIEM");
+        SetColor(MAU_TRANG);
+
+        VeDuongNgang(4, 115, 6);
+
+        int y = 7;
+        for (int i = start; i <= end; i++) {
+            PTRDK p = active[i];
+            PTRSV sv = LaySinhVien(ds_lop, p->dk.MASV);
+            string hoTen = (sv != NULL) ? (sv->sv.HO + " " + sv->sv.TEN) : "--";
+
+            char diemStr[20];
+            if (p->dk.DIEM < 0) {
+                sprintf(diemStr, "Chua nhap");
+            } else {
+                sprintf(diemStr, "%.1f", p->dk.DIEM);
+            }
+
+            gotoxy(4, y);
+            if (i == selectedIndex) {
+                SetBGColor(MAU_DO);
+                SetColor(MAU_TRANG_SANG);
+            } else {
+                SetBGColor(MAU_DEN);
+                SetColor(MAU_TRANG);
+            }
+
+            printf("%-5d | %-12s | %-45s | %-10s",
+                   i + 1, p->dk.MASV.c_str(), hoTen.c_str(), diemStr);
+
+            SetBGColor(MAU_DEN);
+            SetColor(MAU_TRANG);
+            y++;
+        }
+
+        gotoxy(2, 26);
+        SetColor(MAU_VANG_SANG);
+        printf("UP/DOWN: Chon SV   ENTER: Nhap/Sua diem   LEFT/RIGHT: Chuyen trang   ESC: Hoan tat");
+        SetColor(MAU_TRANG);
+
+        gotoxy(2, 27);
+        printf("Trang %d/%d (Tong %d SV)", pt.trangHienTai, pt.tongTrang, total);
 
         int key = DocPhim();
-        if (key == 27)
-        {
-            delete [] active;
-            return true;
-        }
-        else if (key == PHIM_TRAI)
-        {
+        if (key == PHIM_ESC) {
+            break;
+        } else if (key == PHIM_TRAI) {
             TrangTruoc(pt);
-        }
-        else if (key == PHIM_PHAI)
-        {
+        } else if (key == PHIM_PHAI) {
             TrangSau(pt);
-        }
-        else if (key == PHIM_LEN)
-        {
-            if (selectedIndex > 0)
+        } else if (key == PHIM_LEN) {
+            if (selectedIndex > 0) {
                 selectedIndex--;
-        }
-        else if (key == PHIM_XUONG)
-        {
-            if (selectedIndex < total - 1)
+                if (selectedIndex < LayViTriBatDau(pt)) TrangTruoc(pt);
+            }
+        } else if (key == PHIM_XUONG) {
+            if (selectedIndex < total - 1) {
                 selectedIndex++;
-        }
-        else if (allowEdit && (key == 13 || key == 8 || key == 46 || key == 45 ||
-                                (key >= '0' && key <= '9')))
-        {
+                if (selectedIndex > LayViTriKetThuc(pt)) TrangSau(pt);
+            }
+        } else if (key == PHIM_ENTER) {
             int startPage = LayViTriBatDau(pt);
-            int yPos = 8 + 2 * (selectedIndex - startPage);
-            gotoxy(90, yPos);
-            printf("         ");
-            gotoxy(90, yPos);
-
-            float newDiem = active[selectedIndex]->dk.DIEM;
+            int yPos = 7 + (selectedIndex - startPage);
+            
+            gotoxy(72, yPos);
+            SetColor(MAU_VANG_SANG);
+            SetBGColor(MAU_DO);
+            printf(" Nhap (0-10): ");
+            
+            HienConTro();
+            float newDiem = (active[selectedIndex]->dk.DIEM >= 0) ? active[selectedIndex]->dk.DIEM : 0.0f;
             NhapDiem(newDiem);
-            active[selectedIndex]->dk.DIEM = newDiem;
+            AnConTro();
+
+            if (newDiem >= 0.0f && newDiem <= 10.0f) {
+                active[selectedIndex]->dk.DIEM = newDiem;
+                HienThongBaoThanhCong("Da cap nhat diem!");
+            } else {
+                HienThongBaoLoi("Diem khong hop le! (Phai tu 0.0 den 10.0)");
+            }
+
+            if (selectedIndex < total - 1) {
+                selectedIndex++;
+                if (selectedIndex > LayViTriKetThuc(pt)) TrangSau(pt);
+            }
         }
     }
+
+    delete [] active;
 }
 
-void InBangDiemMonHoc(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root)
-{
+void InBangDiemLTC(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root) {
+    clrscr();
+    VeKhungCoTieuDe(30, 7, 90, 21, "IN BANG DIEM LOP TIN CHI");
+
     string nienkhoa;
     int hocky = 0;
-    string mamh;
     int nhom = 0;
+    string mamh;
 
-    NhapThamSoLopTinChi(nienkhoa, hocky, mamh, nhom);
+    gotoxy(35, 10);
+    printf("Nien khoa (vd: 2025-2026): ");
+    NhapMa(nienkhoa, 15);
+    ToUpper(nienkhoa);
+    if (nienkhoa.empty()) return;
+
+    gotoxy(35, 12);
+    printf("Hoc ky (1-3)            : ");
+    NhapSo(hocky);
+
+    gotoxy(35, 14);
+    printf("Nhom                    : ");
+    NhapSo(nhom);
+
+    gotoxy(35, 16);
+    printf("Ma mon hoc              : ");
+    NhapMa(mamh, 15);
+    ToUpper(mamh);
+    if (mamh.empty()) return;
 
     Loptinchi *ltc = TimLTCTheoThongTin(ds_ltc, nienkhoa, hocky, mamh, nhom);
-    if (ltc == NULL)
-    {
-        HienThongBaoLoi("Khong tim thay lop tin chi.");
+    if (ltc == NULL) {
+        HienThongBaoLoi("Khong tim thay Lop tin chi!");
         ChoPhimBatKy();
         return;
     }
 
     int total = 0;
-    for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next)
-    {
-        if (!p->dk.HUYDK)
-            total++;
+    for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next) {
+        if (!p->dk.HUYDK) total++;
     }
 
-    if (total == 0)
-    {
-        HienThongBaoLoi("Khong co sinh vien dang ky hien tai.");
+    if (total == 0) {
+        HienThongBaoLoi("Lop tin chi nay chua co sinh vien dang ky!");
         ChoPhimBatKy();
         return;
     }
 
-    PTRDK *active = new PTRDK[total + 1];
+    PTRDK *active = new PTRDK[total];
     int idx = 0;
-    for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next)
-    {
-        if (!p->dk.HUYDK)
-        {
-            active[idx] = p;
-            idx++;
+    for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next) {
+        if (!p->dk.HUYDK) {
+            active[idx++] = p;
         }
     }
 
+    // Sắp xếp danh sách SV theo Tên + Họ theo chuẩn tài liệu giảng viên
+    SapXepDSRegistered(active, total, ds_lop);
+
     clrscr();
-    VeKhungCoTieuDe(2, 1, 118, 28, "BANG DIEM MON HOC");
+    VeKhungCoTieuDe(2, 1, 118, 28, "BANG DIEM LOP TIN CHI");
 
-    string tenMon = TimTenMonHoc(root, ltc->MAMH);
+    treeMH nodeMH = Search(root, ltc->MAMH);
+    string tenMon = (nodeMH != NULL) ? nodeMH->mh.TENMH : "";
     gotoxy(4, 3);
-    cout << "BANG DIEM MON HOC " << tenMon;
-    gotoxy(4, 4);
-    cout << "Nien khoa : " << ltc->NIENKHOA
-         << "   Hoc ky : " << ltc->HOCKY
-         << "   Nhom : " << ltc->NHOM;
+    SetColor(MAU_XANH_LA_SANG);
+    printf("Mon: %s (%s) | NK: %s | HK: %d | Nhom: %d",
+           tenMon.c_str(), ltc->MAMH.c_str(), ltc->NIENKHOA.c_str(), ltc->HOCKY, ltc->NHOM);
+    SetColor(MAU_TRANG);
 
-    gotoxy(4, 6);
-    cout << "STT | MASV | HO | TEN | DIEM";
+    gotoxy(4, 5);
+    SetColor(MAU_XANH_NHAT_SANG);
+    printf("%-5s | %-12s | %-25s | %-15s | %-8s", "STT", "MASV", "HO", "TEN", "DIEM");
+    SetColor(MAU_TRANG);
 
-    VeDuongNgang(4, 115, 7);
+    VeDuongNgang(4, 115, 6);
 
-    int y = 8;
-    for (int i = 0; i < total; i++)
-    {
+    int y = 7;
+    for (int i = 0; i < total; i++) {
         PTRDK p = active[i];
         PTRSV sv = LaySinhVien(ds_lop, p->dk.MASV);
-        string ho = "--";
-        string ten = "--";
-        if (sv != NULL)
-        {
-            ho = sv->sv.HO;
-            ten = sv->sv.TEN;
+        string ho = (sv != NULL) ? sv->sv.HO : "--";
+        string ten = (sv != NULL) ? sv->sv.TEN : "--";
+
+        char diemStr[20];
+        if (p->dk.DIEM < 0) {
+            sprintf(diemStr, "Chua nhap");
+        } else {
+            sprintf(diemStr, "%.1f", p->dk.DIEM);
         }
 
-        string diemText = ChuyenDiemSangChuoi(p->dk.DIEM);
-        gotoxy(4, y);
-        printf("%-3d | %-10s | %-15s | %-10s | %-5s",
-               i + 1,
-               p->dk.MASV.c_str(),
-               ho.c_str(),
-               ten.c_str(),
-               diemText.c_str());
-        y++;
+        gotoxy(4, y + i);
+        printf("%-5d | %-12s | %-25s | %-15s | %-8s",
+               i + 1, p->dk.MASV.c_str(), ho.c_str(), ten.c_str(), diemStr);
     }
 
     delete [] active;
     ChoPhimBatKy();
 }
 
-static int LaySoTinChiMonHoc(treeMH root, const string &mamh)
-{
-    treeMH node = Search(root, mamh);
-    if (node == NULL)
-        return 0;
-    return node->mh.STC_LT + node->mh.STC_TH;
+// Helper: Lấy điểm thi cao nhất của 1 SV đối với 1 môn học cụ thể
+static float LayDiemCaoNhatMonHoc(DS_LTC &ds_ltc, const string &masv, const string &mamh) {
+    float maxDiem = -1.0f;
+    for (int i = 0; i < ds_ltc.n; i++) {
+        Loptinchi *ltc = ds_ltc.nodes[i];
+        if (ltc == NULL || ltc->HUYLOP) continue;
+        if (ltc->MAMH != mamh) continue;
+
+        for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next) {
+            if (p->dk.MASV == masv && !p->dk.HUYDK && p->dk.DIEM >= 0.0f) {
+                if (p->dk.DIEM > maxDiem) {
+                    maxDiem = p->dk.DIEM;
+                }
+            }
+        }
+    }
+    return maxDiem;
 }
 
-static float TinhDiemTBNguoiHoc(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root, const string &masv)
-{
-    float tong = 0.0f;
-    int tongTC = 0;
+// Helper: Tính điểm trung bình tích lũy theo số tín chỉ của 1 sinh viên
+static float TinhDiemTBKhoaHoc(DS_LTC &ds_ltc, treeMH root, const string &masv) {
+    int maxLTC = ds_ltc.n;
+    if (maxLTC <= 0) return -1.0f;
 
-    for (int i = 0; i < ds_ltc.n; i++)
-    {
+    Dangky *dsMon = new Dangky[maxLTC];
+    int countMon = 0;
+
+    for (int i = 0; i < ds_ltc.n; i++) {
         Loptinchi *ltc = ds_ltc.nodes[i];
-        if (ltc == NULL)
-            continue;
+        if (ltc == NULL || ltc->HUYLOP) continue;
 
-        for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next)
-        {
-            if (p->dk.MASV != masv)
-                continue;
-            if (p->dk.HUYDK)
-                continue;
-            if (p->dk.DIEM < 0)
-                continue;
+        for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next) {
+            if (p->dk.MASV == masv && !p->dk.HUYDK && p->dk.DIEM >= 0.0f) {
+                int foundIdx = -1;
+                for (int j = 0; j < countMon; j++) {
+                    if (dsMon[j].MASV == ltc->MAMH) {
+                        foundIdx = j;
+                        break;
+                    }
+                }
 
-            int tc = LaySoTinChiMonHoc(root, ltc->MAMH);
-            if (tc <= 0)
-                continue;
-
-            tong += p->dk.DIEM * tc;
-            tongTC += tc;
+                if (foundIdx != -1) {
+                    if (p->dk.DIEM > dsMon[foundIdx].DIEM) {
+                        dsMon[foundIdx].DIEM = p->dk.DIEM;
+                    }
+                } else {
+                    dsMon[countMon].MASV = ltc->MAMH;
+                    dsMon[countMon].DIEM = p->dk.DIEM;
+                    countMon++;
+                }
+            }
         }
     }
 
-    if (tongTC <= 0)
+    if (countMon == 0) {
+        delete [] dsMon;
         return -1.0f;
+    }
 
-    return tong / tongTC;
+    float tongDiemXSTC = 0.0f;
+    int tongTC = 0;
+
+    for (int i = 0; i < countMon; i++) {
+        treeMH node = Search(root, dsMon[i].MASV);
+        if (node != NULL) {
+            int stc = node->mh.STC_LT + node->mh.STC_TH;
+            if (stc > 0) {
+                tongDiemXSTC += dsMon[i].DIEM * stc;
+                tongTC += stc;
+            }
+        }
+    }
+
+    delete [] dsMon;
+
+    if (tongTC <= 0) return -1.0f;
+    return tongDiemXSTC / tongTC;
 }
 
-void InBangDiemTrungBinhTheoLop(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root)
-{
-    string malop;
-
+// ============================================================================
+// CHỨC NĂNG (k): IN ĐIỂM TRUNG BÌNH KẾT THÚC KHÓA HỌC CỦA 1 LỚP THEO TÍN CHỈ
+// ============================================================================
+void InBangDiemTrungBinhTheoLop(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root) {
     clrscr();
-    VeKhungNho(30, 8, 90, 16, "NHAP MA LOP");
-    gotoxy(34, 10);
-    cout << "MA LOP: ";
-    NhapMa(malop, 20);
+    VeKhungCoTieuDe(30, 8, 90, 16, "THONG KE DIEM TRUNG BINH KHOA HOC");
+
+    gotoxy(35, 11);
+    printf("Nhap MA LOP: ");
+    string malop;
+    NhapMa(malop, 15);
     ToUpper(malop);
+    if (malop.empty()) return;
 
     Lop *lop = LayLop(ds_lop, malop);
-    if (lop == NULL)
-    {
-        HienThongBaoLoi("Khong tim thay lop.");
+    if (lop == NULL) {
+        HienThongBaoLoi("Khong tim thay Lop hoc voi ma nay!");
         ChoPhimBatKy();
         return;
     }
 
-    PTRSV firstSV = lop->dssv;
-    if (firstSV == NULL)
-    {
-        HienThongBaoLoi("Lop chua co sinh vien nao.");
+    if (lop->dssv == NULL) {
+        HienThongBaoLoi("Lop hoc nay chua co sinh vien nao!");
         ChoPhimBatKy();
         return;
+    }
+
+    int countSV = DemSinhVien(lop->dssv);
+    PTRSV *students = new PTRSV[countSV];
+    int idx = 0;
+    for (PTRSV p = lop->dssv; p != NULL; p = p->next) {
+        students[idx++] = p;
+    }
+
+    // Sắp xếp sinh viên theo Tên + Họ
+    for (int i = 0; i < countSV - 1; i++) {
+        for (int j = i + 1; j < countSV; j++) {
+            if (!SoSanhSV(students[i], students[j])) {
+                PTRSV temp = students[i];
+                students[i] = students[j];
+                students[j] = temp;
+            }
+        }
     }
 
     clrscr();
     VeKhungCoTieuDe(2, 1, 118, 28, "BANG THONG KE DIEM TRUNG BINH KHOA HOC");
 
     gotoxy(4, 3);
-    cout << "Lop     : " << malop;
+    SetColor(MAU_XANH_LA_SANG);
+    printf("Lop: %-15s  Ten lop: %s  (Si so: %d)",
+           lop->MALOP.c_str(), lop->TENLOP.c_str(), countSV);
+    SetColor(MAU_TRANG);
 
     gotoxy(4, 5);
-    cout << "STT | MASV | HO | TEN | Diem TB";
+    SetColor(MAU_XANH_NHAT_SANG);
+    printf("%-5s | %-12s | %-30s | %-15s | %-10s", "STT", "MASV", "HO", "TEN", "Diem TB");
+    SetColor(MAU_TRANG);
 
     VeDuongNgang(4, 115, 6);
 
-    int y = 8;
-    int stt = 1;
+    int y = 7;
+    for (int i = 0; i < countSV; i++) {
+        float dtb = TinhDiemTBKhoaHoc(ds_ltc, root, students[i]->sv.MASV);
+        char dtbStr[20];
+        if (dtb < 0) {
+            sprintf(dtbStr, "Chua co");
+        } else {
+            sprintf(dtbStr, "%.1f", dtb);
+        }
 
-    for (PTRSV sv = firstSV; sv != NULL; sv = sv->next)
-    {
-        float diemTB = TinhDiemTBNguoiHoc(ds_ltc, ds_lop, root, sv->sv.MASV);
-        char buf[20];
-        if (diemTB < 0)
-            sprintf(buf, "0.0");
-        else
-            sprintf(buf, "%.1f", diemTB);
-
-        gotoxy(4, y);
-        printf("%-3d | %-10s | %-15s | %-10s | %-5s",
-               stt,
-               sv->sv.MASV.c_str(),
-               sv->sv.HO.c_str(),
-               sv->sv.TEN.c_str(),
-               buf);
-
-        y++;
-        stt++;
+        gotoxy(4, y + i);
+        printf("%-5d | %-12s | %-30s | %-15s | %-10s",
+               i + 1,
+               students[i]->sv.MASV.c_str(),
+               students[i]->sv.HO.c_str(),
+               students[i]->sv.TEN.c_str(),
+               dtbStr);
     }
 
+    delete [] students;
     ChoPhimBatKy();
 }
 
-static bool DaCoMonHoc(string *subjects, int count, const string &mamh)
-{
-    for (int i = 0; i < count; i++)
-    {
-        if (subjects[i] == mamh)
-            return true;
-    }
-    return false;
-}
-
-static void ThemMonHoc(string *&subjects, int &cap, int &count, const string &mamh)
-{
-    if (count == cap)
-    {
-        int newCap = cap * 2;
-        string *newArr = new string[newCap];
-        for (int i = 0; i < count; i++)
-            newArr[i] = subjects[i];
-        delete [] subjects;
-        subjects = newArr;
-        cap = newCap;
-    }
-
-    subjects[count++] = mamh;
-}
-
-static float LayDiemCaoNhatChoMon(DS_LTC &ds_ltc, const string &masv, const string &mamh)
-{
-    float best = -1.0f;
-
-    for (int i = 0; i < ds_ltc.n; i++)
-    {
-        Loptinchi *ltc = ds_ltc.nodes[i];
-        if (ltc == NULL)
-            continue;
-
-        if (ltc->MAMH != mamh)
-            continue;
-
-        for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next)
-        {
-            if (p->dk.MASV != masv)
-                continue;
-            if (p->dk.HUYDK)
-                continue;
-            if (p->dk.DIEM < 0)
-                continue;
-            if (p->dk.DIEM > best)
-                best = p->dk.DIEM;
-        }
-    }
-
-    return best;
-}
-
-void InBangDiemTongKetTheoLop(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root)
-{
-    string malop;
-
+// ============================================================================
+// CHỨC NĂNG (l): IN BẢNG ĐIỂM TỔNG KẾT CÁC MÔN CỦA CÁC SINH VIÊN THUỘC 1 LỚP
+// ============================================================================
+void InBangDiemTongKetTheoLop(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root) {
     clrscr();
-    VeKhungNho(30, 8, 90, 16, "NHAP MA LOP");
-    gotoxy(34, 10);
-    cout << "MA LOP: ";
-    NhapMa(malop, 20);
+    VeKhungCoTieuDe(30, 8, 90, 16, "IN BANG DIEM TONG KET CAC MON CUA LOP");
+
+    gotoxy(35, 11);
+    printf("Nhap MA LOP: ");
+    string malop;
+    NhapMa(malop, 15);
     ToUpper(malop);
+    if (malop.empty()) return;
 
     Lop *lop = LayLop(ds_lop, malop);
-    if (lop == NULL)
-    {
-        HienThongBaoLoi("Khong tim thay lop.");
+    if (lop == NULL) {
+        HienThongBaoLoi("Khong tim thay Lop hoc voi ma nay!");
         ChoPhimBatKy();
         return;
     }
 
-    PTRSV firstSV = lop->dssv;
-    if (firstSV == NULL)
-    {
-        HienThongBaoLoi("Lop chua co sinh vien nao.");
+    if (lop->dssv == NULL) {
+        HienThongBaoLoi("Lop hoc nay chua co sinh vien nao!");
         ChoPhimBatKy();
         return;
     }
 
-    int studentCount = 0;
-    for (PTRSV p = firstSV; p != NULL; p = p->next)
-        studentCount++;
+    int countSV = DemSinhVien(lop->dssv);
+    PTRSV *students = new PTRSV[countSV];
+    int idx = 0;
+    for (PTRSV p = lop->dssv; p != NULL; p = p->next) {
+        students[idx++] = p;
+    }
 
-    string *subjects = new string[16];
-    int subjectCap = 16;
-    int subjectCount = 0;
-
-    for (PTRSV p = firstSV; p != NULL; p = p->next)
-    {
-        for (int i = 0; i < ds_ltc.n; i++)
-        {
-            Loptinchi *ltc = ds_ltc.nodes[i];
-            if (ltc == NULL)
-                continue;
-
-            for (PTRDK q = ltc->dssvdk; q != NULL; q = q->next)
-            {
-                if (q->dk.MASV != p->sv.MASV)
-                    continue;
-                if (q->dk.HUYDK)
-                    continue;
-                if (q->dk.DIEM < 0)
-                    continue;
-                if (!DaCoMonHoc(subjects, subjectCount, ltc->MAMH))
-                    ThemMonHoc(subjects, subjectCap, subjectCount, ltc->MAMH);
+    // Sắp xếp sinh viên theo Tên + Họ
+    for (int i = 0; i < countSV - 1; i++) {
+        for (int j = i + 1; j < countSV; j++) {
+            if (!SoSanhSV(students[i], students[j])) {
+                PTRSV temp = students[i];
+                students[i] = students[j];
+                students[j] = temp;
             }
         }
     }
 
-    if (subjectCount == 0)
-    {
+    // Thu thập tất cả các môn duy nhất mà các SV thuộc Lớp này đã học
+    string *subjects = new string[1000];
+    int countMH = 0;
+
+    for (int i = 0; i < countSV; i++) {
+        string masv = students[i]->sv.MASV;
+        for (int k = 0; k < ds_ltc.n; k++) {
+            Loptinchi *ltc = ds_ltc.nodes[k];
+            if (ltc == NULL || ltc->HUYLOP) continue;
+
+            for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next) {
+                if (p->dk.MASV == masv && !p->dk.HUYDK && p->dk.DIEM >= 0.0f) {
+                    bool exists = false;
+                    for (int m = 0; m < countMH; m++) {
+                        if (subjects[m] == ltc->MAMH) {
+                            exists = true;
+                            break;
+                        }
+                    }
+                    if (!exists) {
+                        subjects[countMH++] = ltc->MAMH;
+                    }
+                }
+            }
+        }
+    }
+
+    if (countMH == 0) {
+        delete [] students;
         delete [] subjects;
-        HienThongBaoLoi("Lop chua co bat ky diem nao.");
+        HienThongBaoLoi("Lop chua co sinh vien nao co diem mon hoc!");
         ChoPhimBatKy();
         return;
     }
 
-    PTRSV *students = new PTRSV[studentCount];
-    int idx = 0;
-    for (PTRSV p = firstSV; p != NULL; p = p->next)
-        students[idx++] = p;
-
-    float **scores = new float*[studentCount];
-    for (int i = 0; i < studentCount; i++)
-    {
-        scores[i] = new float[subjectCount];
-        for (int j = 0; j < subjectCount; j++)
-            scores[i][j] = -1.0f;
+    // Sắp xếp mã môn học tăng dần theo MAMH
+    for (int i = 0; i < countMH - 1; i++) {
+        for (int j = i + 1; j < countMH; j++) {
+            if (subjects[i] > subjects[j]) {
+                string temp = subjects[i];
+                subjects[i] = subjects[j];
+                subjects[j] = temp;
+            }
+        }
     }
 
-    for (int i = 0; i < studentCount; i++)
-    {
-        for (int j = 0; j < subjectCount; j++)
-        {
-            float best = LayDiemCaoNhatChoMon(ds_ltc, students[i]->sv.MASV, subjects[j]);
-            if (best >= 0)
-                scores[i][j] = best;
+    // Tạo ma trận điểm [countSV x countMH]
+    float **matrix = new float*[countSV];
+    for (int i = 0; i < countSV; i++) {
+        matrix[i] = new float[countMH];
+        for (int j = 0; j < countMH; j++) {
+            matrix[i][j] = LayDiemCaoNhatMonHoc(ds_ltc, students[i]->sv.MASV, subjects[j]);
         }
     }
 
     clrscr();
-    VeKhungCoTieuDe(2, 1, 118, 28, "BANG DIEM TONG KET");
+    VeKhungCoTieuDe(2, 1, 118, 28, "BANG DIEM TONG KET CÁC MÔN HỌC");
 
     gotoxy(4, 3);
-    cout << "Lop     : " << malop;
+    SetColor(MAU_XANH_LA_SANG);
+    printf("Lop: %-15s  Ten lop: %s", lop->MALOP.c_str(), lop->TENLOP.c_str());
+    SetColor(MAU_TRANG);
 
+    // In tiêu đề ma trận (cột)
     gotoxy(4, 5);
-    cout << "STT | MASV | HO TEN";
-    for (int j = 0; j < subjectCount; j++)
-    {
-        cout << " | " << subjects[j];
+    SetColor(MAU_XANH_NHAT_SANG);
+    printf("%-4s | %-10s | %-22s", "STT", "MASV", "HO TEN");
+    for (int j = 0; j < countMH && j < 6; j++) {
+        printf(" | %-8s", subjects[j].c_str());
     }
+    SetColor(MAU_TRANG);
 
     VeDuongNgang(4, 115, 6);
 
-    int y = 8;
-    for (int i = 0; i < studentCount; i++)
-    {
+    int y = 7;
+    for (int i = 0; i < countSV; i++) {
+        gotoxy(4, y + i);
         string hoTen = students[i]->sv.HO + " " + students[i]->sv.TEN;
-        char buf[20];
-
-        gotoxy(4, y);
-        printf("%-3d | %-10s | %-20s",
+        printf("%-4d | %-10s | %-22.22s",
                i + 1,
                students[i]->sv.MASV.c_str(),
                hoTen.c_str());
 
-        for (int j = 0; j < subjectCount; j++)
-        {
-            if (scores[i][j] < 0)
-                sprintf(buf, "-");
-            else
-                sprintf(buf, "%.1f", scores[i][j]);
-            cout << " | " << buf;
+        for (int j = 0; j < countMH && j < 6; j++) {
+            if (matrix[i][j] < 0) {
+                printf(" | %-8s", "-");
+            } else {
+                printf(" | %-8.1f", matrix[i][j]);
+            }
         }
-
-        y++;
     }
 
-    for (int i = 0; i < studentCount; i++)
-        delete [] scores[i];
-    delete [] scores;
+    // Giải phóng bộ nhớ
+    for (int i = 0; i < countSV; i++) {
+        delete [] matrix[i];
+    }
+    delete [] matrix;
     delete [] students;
     delete [] subjects;
+
     ChoPhimBatKy();
 }
 
-void NhapDiem(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root)
-{
-    int selectedAction = 0;
+void VeMenuDiem(int x, int y, int viTriChon) {
+    const char *items[5] = {
+        "  Nhap / Cap nhat diem Lop tin chi            ",
+        "  In Bang diem Lop tin chi                    ",
+        "  In Bang diem trung binh khoa hoc ",
+        "  In Bang diem tong ket cac mon   ",
+        "  Quay lai Menu chinh                         "
+    };
 
-    while (true)
-    {
-        clrscr();
+    for (int i = 0; i < 5; i++) {
+        gotoxy(x, y + i * 2);
+        if (i == viTriChon) {
+            SetBGColor(MAU_DO);
+            SetColor(MAU_TRANG_SANG);
+        } else {
+            SetBGColor(MAU_XANH_DUONG);
+            SetColor(MAU_TRANG_SANG);
+        }
+        printf("%s", items[i]);
+    }
+    SetBGColor(MAU_DEN);
+    SetColor(MAU_TRANG);
+}
 
-        PhanTrang pt;
-        KhoiTaoPhanTrang(pt, 0, 10);
+int XuLyMenuDiem() {
+    clrscr();
+    VeKhungCoTieuDe(28, 6, 95, 21, "MENU QUAN LY DIEM");
+    
+    gotoxy(35, 19);
+    SetColor(MAU_VANG_SANG);
+    printf("UP/DOWN: Chon  ENTER: Dong y  ESC: Quay lai");
+    SetColor(MAU_TRANG);
 
-        int totalLtc = 0;
-        for (int i = 0; i < ds_ltc.n; i++)
-        {
-            if (ds_ltc.nodes[i] != NULL)
-                totalLtc++;
-        }
+    int viTriChon = 0;
+    int soMuc = 5;
+    VeMenuDiem(30, 8, viTriChon);
 
-        KhoiTaoPhanTrang(pt, totalLtc, 10);
-        // FIX: tăng chiều rộng bảng trái và kéo khung phải sang phải để tạo khoảng trống rõ ràng.
-        VeBangLopTinChi(ds_ltc, root, pt, 2, 2, 90, 28);
-        VeMenuThaoTac(94, 4, 118, 18, selectedAction);
+    while (true) {
+        int phim = DocPhim();
+        if (phim == PHIM_ESC) {
+            return 4;
+        }
+        if (phim == PHIM_ENTER) {
+            return viTriChon;
+        }
+        if (phim == PHIM_LEN) {
+            viTriChon = (viTriChon - 1 + soMuc) % soMuc;
+            VeMenuDiem(30, 8, viTriChon);
+        }
+        else if (phim == PHIM_XUONG) {
+            viTriChon = (viTriChon + 1) % soMuc;
+            VeMenuDiem(30, 8, viTriChon);
+        }
+    }
+}
 
-        int key = DocPhim();
-        if (key == 27)
-            return;
-        else if (key == PHIM_LEN)
-        {
-            if (selectedAction > 0)
-                selectedAction--;
+void MenuQuanLyDiem(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root) {
+    while (true) {
+        int chon = XuLyMenuDiem();
+        if (chon == 4 || chon == -1) {
+            break;
         }
-        else if (key == PHIM_XUONG)
-        {
-            if (selectedAction < 2)
-                selectedAction++;
-        }
-        else if (key == PHIM_TRAI)
-        {
-            TrangTruoc(pt);
-        }
-        else if (key == PHIM_PHAI)
-        {
-            TrangSau(pt);
-        }
-        else if (key == 13)
-        {
-            if (selectedAction == 0)
-            {
-                string nienkhoa;
-                int hocky = 0;
-                string mamh;
-                int nhom = 0;
-                NhapThamSoLopTinChi(nienkhoa, hocky, mamh, nhom);
-                HienThiBangDiem(ds_ltc, ds_lop, root, nienkhoa, hocky, mamh, nhom, true);
-            }
-            else if (selectedAction == 1)
-            {
-                InBangDiemMonHoc(ds_ltc, ds_lop, root);
-            }
-            else
-            {
-                return;
-            }
+        switch (chon) {
+            case 0:
+                NhapDiemLTC(ds_ltc, ds_lop, root);
+                break;
+            case 1:
+                InBangDiemLTC(ds_ltc, ds_lop, root);
+                break;
+            case 2:
+                InBangDiemTrungBinhTheoLop(ds_ltc, ds_lop, root);
+                break;
+            case 3:
+                InBangDiemTongKetTheoLop(ds_ltc, ds_lop, root);
+                break;
         }
     }
 }

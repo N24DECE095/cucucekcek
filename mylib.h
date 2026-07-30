@@ -1,10 +1,3 @@
-/*
-    File: mylib.h
-    Mô tả: Thư viện console API + các hàm nhập chuẩn (phiên bản std::string)
-    Dùng cho project QLDSV_HTC — theo yêu cầu thầy dùng std::string.
-
-    Kế thừa từ QLVT_Final/mylib.h nhưng các hàm nhập được convert sang string.
-*/
 
 #ifndef MYLIB_H
 #define MYLIB_H
@@ -22,7 +15,7 @@ using namespace std;
 #define Enter 13
 
 // ============================================================================
-// CONSOLE API — nguyên gốc từ mylib.h của thầy
+// CONSOLE API 
 // ============================================================================
 
 inline void gotoxy(short x, short y) {
@@ -85,7 +78,7 @@ inline void SetBGColor(WORD color) {
 }
 
 // ============================================================================
-// HÀM XÁC NHẬN Y/N — style thầy trong DSLK_SV_Undo.cpp
+// HÀM XÁC NHẬN Y/N —
 // ============================================================================
 // Hỏi Y/N, trả về 1 nếu Y, 0 nếu N. Dùng getch + toupper cho input tức thời.
 inline int XacNhan(const char *thongBao) {
@@ -99,7 +92,7 @@ inline int XacNhan(const char *thongBao) {
 }
 
 // ============================================================================
-// HÀM BÁO LỖI — style thầy: in ở dòng 24, sleep 4s, khôi phục cursor
+// HÀM BÁO LỖI 
 // ============================================================================
 inline void BaoLoi(const char *s) {
     int x = wherex(), y = wherey();
@@ -114,7 +107,7 @@ inline void BaoLoi(const char *s) {
 }
 
 // ============================================================================
-// CÁC HÀM NHẬP CHUẨN — phiên bản std::string
+// CÁC HÀM NHẬP CHUẨN 
 // ============================================================================
 
 // 1. Nhập số nguyên không âm (nhập từng ký số, bắt lỗi)

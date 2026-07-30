@@ -378,47 +378,4 @@ static void FormHieuChinhMH(treeMH root) {
         HienThongBaoLoi("Cap nhat that bai.");
 }
 
-// ============================================================================
-// MENU CHÍNH CỦA MODULE MÔN HỌC — Chức năng (e) & (f)
-// ============================================================================
-void MenuQuanLyMonhoc(treeMH &root, DS_LTC &dsLtc) {
-    const char *items[6] = {
-        "1. Them mon hoc moi                          ",
-        "2. Xoa mon hoc                               ",
-        "3. Hieu chinh mon hoc                        ",
-        "4. In danh sach mon hoc (tang dan theo ten)  ",
-        "5. Can bang cay thu cong (tu do goi)         ",
-        "6. Quay lai menu chinh                       "
-    };
-    while (true) {
-        clrscr();
-        VeKhungCoTieuDe(2, 1, 118, 28, "QUAN LY MON HOC (Chuc nang e, f)");
-        int n = DemMH(root);
-        int h = LayChieuCaoCay(root);
-        gotoxy(30, 5);
-        SetColor(MAU_VANG_SANG);
-        printf("Tong so mon: %d   |   Chieu cao cay: %d", n, h);
-        SetColor(MAU_TRANG);
-        gotoxy(30, 6);
-        SetColor(MAU_XAM);
-        // Chiều cao lý tưởng ceil(log2(n+1))
-        int hLyTuong = 0;
-        int t = n;
-        while (t > 0) { hLyTuong++; t /= 2; }
-        printf("(Chieu cao ly tuong khi can bang: %d)", hLyTuong);
-        SetColor(MAU_TRANG);
 
-        int chon = XuLyMenu(30, 9, items, 6);
-        if (chon == -1 || chon == 5) return;
-        switch (chon) {
-            case 0: FormThemMH(root); break;
-            case 1: FormXoaMH(root, dsLtc); break;
-            case 2: FormHieuChinhMH(root); break;
-            case 3: InDSMHTheoTen(root); break;
-            case 4:
-                CanBangCay(root);
-                HienThongBaoThanhCong("Da can bang cay bang InOrder-Rebuild.");
-                break;
-        }
-    }
-}

@@ -1,5 +1,6 @@
-#include "DangKy.h"
+Ôªø#include "DangKy.h"
 #include "GiaoDien.h"
+#include "mylib.h"
 
 #include <iostream>
 #include <iomanip>
@@ -7,21 +8,19 @@
 using namespace std;
 
 //=====================================================
-// KI?M TRA SINH VI N
+// KI?M TRA SINH VI√äN
 //=====================================================
 
-bool SinhVienTonTai(DS_LOP &dslop,
-                    const string &masv)
+bool SinhVienTonTai(DS_LOP &dslop, const string &masv)
 {
     return LaySinhVien(dslop, masv) != NULL;
 }
 
 //=====================================================
-// KI?M TRA –√ –ANG K› CHUA
+// KI?M TRA ?√É ??NG K√ù CH?A
 //=====================================================
 
-bool DaDangKyLTC(Loptinchi *ltc,
-                 const string &masv)
+bool DaDangKyLTC(Loptinchi *ltc, const string &masv)
 {
     if (ltc == NULL)
         return false;
@@ -35,68 +34,61 @@ bool DaDangKyLTC(Loptinchi *ltc,
 }
 
 //=====================================================
-// –ANG K› L?P TÕN CH?
+// ??NG K√ù L?P T√çN CH?
 //=====================================================
 
-bool DangKyLopTinChi(DS_LTC &dsltc,
-                     DS_LOP &dslop,
-                     int maloptc,
-                     const string &masv)
+bool DangKyLopTinChi(DS_LTC &dsltc, DS_LOP &dslop, int maloptc, const string &masv)
 {
-    // ki?m tra sinh viÍn
+    // ki?m tra sinh vi√™n
     if (!SinhVienTonTai(dslop, masv))
         return false;
 
-    // tÏm l?p tÌn ch?
+    // t√¨m l?p t√≠n ch?
     Loptinchi *ltc = LayLTC(dsltc, maloptc);
 
     if (ltc == NULL)
         return false;
 
-    // l?p d„ b? h?y
+    // l?p ?√£ b? h?y
     if (ltc->HUYLOP)
         return false;
 
-    // l?p d„ d?y
+    // l?p ?√£ ??y
     if (DemSVDangKy(ltc->dssvdk) >= ltc->SOSVMAX)
         return false;
 
-    // ki?m tra sinh viÍn d„ t?ng dang k˝ chua
+    // ki?m tra sinh vi√™n ?√£ t?ng ??ng k√Ω ch?a
     PTRDK p = TimDKTheoMASV(ltc->dssvdk, masv);
 
     if (p != NULL)
     {
-        // n?u d„ h?y thÏ m? l?i
+        // n?u ?√£ h?y th√¨ m? l?i
         if (p->dk.HUYDK)
         {
             p->dk.HUYDK = false;
             p->dk.DIEM = -1;
-
             return true;
         }
-
-        // dang dang k˝ r?i
+        // ?ang ??ng k√Ω r?i
         return false;
     }
 
     Dangky dk;
 
-    KhoiTaoDangKy(dk);
+	dk.MASV = masv;
+	dk.DIEM = -1;
+	dk.HUYDK = false;
 
-    dk.MASV = masv;
-
-    Insert_Order_DK(ltc->dssvdk, dk);
+	Insert_Order_DK(ltc->dssvdk, dk);
 
     return true;
 }
 
 //=====================================================
-// H?Y –ANG K›
+// H?Y ??NG K√ù
 //=====================================================
 
-bool HuyDangKyLopTinChi(DS_LTC &dsltc,
-                        int maloptc,
-                        const string &masv)
+bool HUYDKLopTinChi(DS_LTC &dsltc, int maloptc, const string &masv)
 {
     Loptinchi *ltc = LayLTC(dsltc, maloptc);
 
@@ -117,37 +109,22 @@ bool HuyDangKyLopTinChi(DS_LTC &dsltc,
 }
 
 //=====================================================
-// CH?C NANG (b)
-// IN DANH S¡CH SINH VI N –ANG K› L?P TÕN CH?
+// IN DANH S√ÅCH SINH VI√äN ??NG K√ù L?P T√çN CH?
 //=====================================================
 
-void InDSSVDangKy(DS_LTC &dsltc,
-                  DS_LOP &dslop,
-                  treeMH root,
-                  const string &nienkhoa,
-                  int hocky,
-                  const string &mamh,
-                  int nhom)
+void InDSSVDangKy(DS_LTC &dsltc, DS_LOP &dslop, treeMH root, 
+                  const string &nienkhoa, int hocky, const string &mamh, int nhom)
 {
     Loptinchi *ltc = NULL;
 
-    // TÏm l?p tÌn ch? theo 4 tham s?
+    // T√¨m l?p t√≠n ch? theo 4 tham s?
     for (int i = 0; i < dsltc.n; i++)
     {
-        if (dsltc.nodes[i] == NULL)
-            continue;
-
-        if (dsltc.nodes[i]->NIENKHOA != nienkhoa)
-            continue;
-
-        if (dsltc.nodes[i]->HOCKY != hocky)
-            continue;
-
-        if (dsltc.nodes[i]->MAMH != mamh)
-            continue;
-
-        if (dsltc.nodes[i]->NHOM != nhom)
-            continue;
+        if (dsltc.nodes[i] == NULL) continue;
+        if (dsltc.nodes[i]->NIENKHOA != nienkhoa) continue;
+        if (dsltc.nodes[i]->HOCKY != hocky) continue;
+        if (dsltc.nodes[i]->MAMH != mamh) continue;
+        if (dsltc.nodes[i]->NHOM != nhom) continue;
 
         ltc = dsltc.nodes[i];
         break;
@@ -155,80 +132,93 @@ void InDSSVDangKy(DS_LTC &dsltc,
 
     if (ltc == NULL)
     {
-        HienThongBaoLoi("Khong tim thay lop tin chi.");
+        HienThongBaoLoi("Khong tim thay lop tin chi voi thong tin nay.");
         ChoPhimBatKy();
         return;
     }
 
     clrscr();
+    VeKhungCoTieuDe(2, 1, 118, 28, " DANH SACH SINH VIEN DANG KY ");
 
-    VeKhungCoTieuDe(2,1,118,28,
-        "DANH SACH SINH VIEN DANG KY");
-
-    gotoxy(4,3);
+    gotoxy(4, 3);
     printf("Mon hoc    : %s", mamh.c_str());
 
-    gotoxy(4,4);
+    gotoxy(4, 4);
     printf("Nien khoa  : %s", nienkhoa.c_str());
 
-    gotoxy(40,4);
+    gotoxy(40, 4);
     printf("Hoc ky : %d", hocky);
 
-    gotoxy(60,4);
+    gotoxy(60, 4);
     printf("Nhom : %d", nhom);
 
-    VeDuongNgang(4,115,5);
+    VeDuongNgang(4, 115, 5);
 
-    gotoxy(4,6);
-    printf("%-15s %-35s %-15s",
-           "MASV",
-           "HO TEN",
-           "TRANG THAI");
+    gotoxy(4, 6);
+    SetColor(MAU_VANG_SANG);
 
-    VeDuongNgang(4,115,7);
+    printf("%-5s %-15s %-40s %-15s",
+       "STT",
+       "MASV",
+       "HO TEN",
+       "TRANG THAI");
+    SetColor(MAU_TRANG);
+
+    VeDuongNgang(4, 115, 7);
 
     int y = 8;
+    int count = 0;
 
-    for (PTRDK p = ltc->dssvdk;
-         p != NULL;
-         p = p->next)
+    for (PTRDK p = ltc->dssvdk; p != NULL; p = p->next)
     {
-        PTRSV sv = LaySinhVien(dslop,
-                               p->dk.MASV);
+	int stt=1;
+        PTRSV sv = LaySinhVien(dslop, p->dk.MASV);
+        if (sv == NULL) continue;
 
-        if (sv == NULL)
-            continue;
+        string hoten = sv->sv.HO + " " + sv->sv.TEN;
 
-        string hoten =
-            sv->sv.HO + " " + sv->sv.TEN;
-
-        gotoxy(4,y);
-
-        printf("%-15s %-35s %-15s",
-               sv->sv.MASV.c_str(),
-               hoten.c_str(),
-               p->dk.HUYDK ? "Da huy" : "Dang hoc");
-
+        gotoxy(4, y);
+        printf("%-5d %-15s %-40s %-15s",
+       stt++,
+       sv->sv.MASV.c_str(),
+       hoten.c_str(),
+       p->dk.HUYDK ? "HUY" : "DANG KY");
+               
         y++;
+        count++;
+        
+        // Tr√°nh in tr√†n khung (n?u qu√° nhi?u SV, b?n c√≥ th? √°p d?ng th√™m Ph√¢n Trang ? ?√¢y)
+        if (y > 26) {
+            gotoxy(4, 27);
+            SetColor(MAU_XANH_LA_SANG);
+            printf("Danh sach con dai, nhan phim de xem tiep...");
+            SetColor(MAU_TRANG);
+            getch();
+            XoaDong(27);
+            // X√≥a v√πng hi?n th? ?? in trang sau
+            for(int cl = 8; cl <= 26; cl++) { XoaDong(cl); VeKhung(2, 1, 118, 28); VeDuongNgang(4, 115, 5); VeDuongNgang(4, 115, 7);}
+            y = 8;
+        }
     }
+
+    gotoxy(4, 27);
+    SetColor(MAU_VANG_SANG);
+    printf("Tong so sinh vien: %d", count);
+    SetColor(MAU_TRANG);
 
     ChoPhimBatKy();
 }
 
 //=====================================================
-// MENU –ANG K› H?C PH?N
+// MENU ??NG K√ù H?C PH?N
 //=====================================================
 
-void MenuDangKyHocPhan(DS_LTC &dsltc,
-                       DS_LOP &dslop,
-                       treeMH root)
+void MenuDangKyHocPhan(DS_LTC &dsltc, DS_LOP &dslop, treeMH root)
 {
     while (true)
     {
         clrscr();
-
-        VeKhungCoTieuDe(20,2,100,26,
-                        "DANG KY LOP TIN CHI");
+        VeKhungCoTieuDe(35, 5, 85, 15, " DANG KY LOP TIN CHI ");
 
         const char *items[] =
         {
@@ -238,147 +228,201 @@ void MenuDangKyHocPhan(DS_LTC &dsltc,
             "4. Thoat"
         };
 
-        int chon = XuLyMenu(28,6,items,4);
+        // 40 l√† ho√†nh ?? X, 8 l√† tung ?? Y c?a menu
+        int chon = XuLyMenu(40, 8, items, 4);
 
-        if (chon == -1 || chon == 3)
+        if (chon == -1 || chon == 3) // ESC ho?c ch?n Tho√°t
             return;
 
         switch (chon)
         {
         //-------------------------------------------------
-        // –ANG K›
+        // ??NG K√ù
         //-------------------------------------------------
         case 0:
         {
             string masv;
             string nienkhoa;
-            int hocky;
-            int maloptc;
+            int hocky = 0;
+            int maloptc = 0;
 
             clrscr();
+            VeKhungCoTieuDe(25, 2, 95, 12, " THONG TIN DANG KY ");
+            HienConTro(); // Hi?n con tr? ?? nh?p
 
-            gotoxy(5,3);
+            gotoxy(30, 4);
             cout << "Nhap ma sinh vien: ";
-            cin >> masv;
+            NhapMa(masv, 15);
 
             PTRSV sv = LaySinhVien(dslop, masv);
-
             if (sv == NULL)
             {
-                HienThongBaoLoi("Khong tim thay sinh vien.");
-                ChoPhimBatKy();
+                AnConTro();
+                HienThongBaoLoi("Khong tim thay sinh vien hoac ma SV sai.");
                 break;
             }
 
-            gotoxy(5,5);
-            cout << "Sinh vien: "
-                 << sv->sv.HO << " "
-                 << sv->sv.TEN;
+            gotoxy(30, 6);
+            SetColor(MAU_XANH_LA_SANG);
 
-            gotoxy(5,7);
-            cout << "Nhap nien khoa: ";
-            cin >> nienkhoa;
+		printf("Sinh vien: %s %s",
+       			sv->sv.HO.c_str(),
+       			sv->sv.TEN.c_str());
 
-            gotoxy(5,8);
+		SetColor(MAU_TRANG);
+
+            gotoxy(30, 8);
+            cout << "Nhap nien khoa (vd: 2023-2024): ";
+            NhapMa(nienkhoa, 10);
+
+            gotoxy(30, 10);
             cout << "Nhap hoc ky: ";
-            cin >> hocky;
+            NhapSo(hocky);
 
-            clrscr();
+            AnConTro();
+           clrscr();
 
-            // D˘ng h‡m c?a TV1
-            InDSLopTinChi(dsltc, root);
+		VeKhungCoTieuDe(2,1,118,28,
+                "CAC LOP TIN CHI CO THE DANG KY");
 
-            cout << endl;
-            cout << "Nhap ma lop tin chi: ";
-            cin >> maloptc;
+		gotoxy(3,3);
 
-            if (DangKyLopTinChi(dsltc,
-                                dslop,
-                                maloptc,
-                                masv))
+		SetColor(MAU_VANG_SANG);
+
+		printf("%-8s %-10s %-28s %-12s %-4s %-6s %-6s %-6s",
+       			"MALTC",
+       			"MAMH",
+      			"TEN MON",
+       			"NIEN KHOA",
+       			"HK",
+      			"NHOM",
+       			"SVDK",
+       			"CON");
+
+		SetColor(MAU_TRANG);
+
+		VeDuongNgang(3,115,4);
+
+		int y=5;
+
+		for(int i=0;i<dsltc.n;i++)
+{
+    Loptinchi *ltc=dsltc.nodes[i];
+
+    if(ltc==NULL) continue;
+    if(ltc->HUYLOP) continue;
+
+    if(ltc->NIENKHOA!=nienkhoa)
+        continue;
+
+    if(ltc->HOCKY!=hocky)
+        continue;
+
+    treeMH mh=Search(root,ltc->MAMH);
+
+    if(mh==NULL)
+        continue;
+
+    int svdk=DemSVDangKy(ltc->dssvdk);
+
+    gotoxy(3,y++);
+
+    printf("%-8d %-10s %-28s %-12s %-4d %-6d %-6d %-6d",
+       ltc->MALOPTC,
+       ltc->MAMH.c_str(),
+       mh->mh.TENMH.c_str(),
+       ltc->NIENKHOA.c_str(),
+       ltc->HOCKY,
+       ltc->NHOM,
+       svdk,
+       ltc->SOSVMAX - svdk);
+}
+
+            HienConTro();
+            gotoxy(2, 27);
+            cout << "Nhap ma lop tin chi ban muon dang ky: ";
+            NhapSo(maloptc);
+            AnConTro();
+
+            if (DangKyLopTinChi(dsltc, dslop, maloptc, masv))
             {
-                HienThongBaoThanhCong("Dang ky thanh cong.");
+                HienThongBaoThanhCong("Dang ky thanh cong vao lop tin chi!");
             }
             else
             {
-                HienThongBaoLoi("Dang ky that bai.");
+                HienThongBaoLoi("Dang ky that bai (Lop day / Da DK / Huy lop).");
             }
-
-            ChoPhimBatKy();
             break;
         }
 
         //-------------------------------------------------
-        // H?Y –ANG K›
+        // H?Y ??NG K√ù
         //-------------------------------------------------
         case 1:
         {
             string masv;
-            int maloptc;
+            int maloptc = 0;
 
             clrscr();
+            VeKhungCoTieuDe(30, 5, 90, 15, " HUY DANG KY HOC PHAN ");
+            HienConTro();
 
-            gotoxy(5,3);
+            gotoxy(35, 8);
             cout << "Nhap ma sinh vien: ";
-            cin >> masv;
+            NhapMa(masv, 15);
 
-            gotoxy(5,4);
+            gotoxy(35, 11);
             cout << "Nhap ma lop tin chi: ";
-            cin >> maloptc;
+            NhapSo(maloptc);
+            AnConTro();
 
-            if (HuyDangKyLopTinChi(dsltc,
-                                   maloptc,
-                                   masv))
+            if (HUYDKLopTinChi(dsltc, maloptc, masv))
             {
-                HienThongBaoThanhCong("Da huy dang ky.");
+                HienThongBaoThanhCong("Huy dang ky thanh cong.");
             }
             else
             {
-                HienThongBaoLoi("Khong the huy dang ky.");
+                HienThongBaoLoi("Huy that bai! (Chua dang ky hoac ma loi).");
             }
-
-            ChoPhimBatKy();
             break;
         }
 
         //-------------------------------------------------
-        // IN DANH S¡CH –ANG K›
+        // IN DANH S√ÅCH ??NG K√ù
         //-------------------------------------------------
         case 2:
         {
             string nienkhoa;
             string mamh;
-            int hocky;
-            int nhom;
+            int hocky = 0;
+            int nhom = 0;
 
             clrscr();
+            VeKhungCoTieuDe(25, 4, 95, 18, " THONG TIN LOP TIN CHI CAN IN ");
+            HienConTro();
 
-            gotoxy(5,3);
-            cout << "Nhap nien khoa: ";
-            cin >> nienkhoa;
-
-            gotoxy(5,4);
-            cout << "Nhap hoc ky: ";
-            cin >> hocky;
-
-            gotoxy(5,5);
+            gotoxy(30, 7);
             cout << "Nhap ma mon hoc: ";
-            cin >> mamh;
+            NhapMa(mamh, 15);
 
-            gotoxy(5,6);
+            gotoxy(30, 10);
+            cout << "Nhap nien khoa: ";
+            NhapMa(nienkhoa, 10);
+
+            gotoxy(30, 13);
+            cout << "Nhap hoc ky: ";
+            NhapSo(hocky);
+
+            gotoxy(30, 16);
             cout << "Nhap nhom: ";
-            cin >> nhom;
+            NhapSo(nhom);
+            AnConTro();
 
-            InDSSVDangKy(dsltc,
-                         dslop,
-                         root,
-                         nienkhoa,
-                         hocky,
-                         mamh,
-                         nhom);
-
+            InDSSVDangKy(dsltc, dslop, root, nienkhoa, hocky, mamh, nhom);
             break;
         }
         }
     }
 }
+
+

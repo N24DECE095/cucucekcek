@@ -29,6 +29,7 @@
 
 #define FILE_MONHOC "data_monhoc.txt"
 #define FILE_LTC    "data_ltc.txt"
+#define FILE_LOP    "data_lop.txt"
 
 // ===================== MÔN HỌC =====================
 void LuuFileMonhoc(treeMH root, const char *file = FILE_MONHOC);
@@ -38,8 +39,12 @@ void DocFileMonhoc(treeMH &root, const char *file = FILE_MONHOC);
 void LuuFileLTC(DS_LTC &ds, const char *file = FILE_LTC);
 void DocFileLTC(DS_LTC &ds, const char *file = FILE_LTC);
 
+// ===================== LỚP HÀNH CHÍNH & SINH VIÊN =====================
+void LuuFileLop(DS_LOP &ds, const char *file = FILE_LOP);
+void DocFileLop(DS_LOP &ds, const char *file = FILE_LOP);
+
 // ===================== MASTER =====================
-void LuuTatCa(treeMH root, DS_LTC &dsLtc);
-void DocTatCa(treeMH &root, DS_LTC &dsLtc);
+void LuuTatCa(treeMH root, DS_LTC &dsLtc, DS_LOP &dsLop);
+void DocTatCa(treeMH &root, DS_LTC &dsLtc, DS_LOP &dsLop);
 
 #endif // XULYFILE_H

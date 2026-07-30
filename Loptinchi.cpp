@@ -199,7 +199,7 @@ void InDSLopTinChi(DS_LTC &ds, treeMH root) {
 // ============================================================================
 
 // ---- Form THÊM LTC ----
-static void FormThemLTC(DS_LTC &dsltc, treeMH root) {
+void FormThemLTC(DS_LTC &dsltc, treeMH root) {
     clrscr();
     VeKhungCoTieuDe(2, 1, 118, 28, "MO LOP TIN CHI MOI (Chuc nang a)");
     Loptinchi ltc;
@@ -256,7 +256,7 @@ static void FormThemLTC(DS_LTC &dsltc, treeMH root) {
 }
 
 // ---- Form XOÁ LTC ----
-static void FormXoaLTC(DS_LTC &dsltc) {
+void FormXoaLTC(DS_LTC &dsltc) {
     clrscr();
     VeKhungCoTieuDe(2, 1, 118, 28, "XOA LOP TIN CHI");
     int maloptc;
@@ -289,7 +289,7 @@ static void FormXoaLTC(DS_LTC &dsltc) {
 }
 
 // ---- Form HIỆU CHỈNH LTC ----
-static void FormHieuChinhLTC(DS_LTC &dsltc, treeMH root) {
+void FormHieuChinhLTC(DS_LTC &dsltc, treeMH root) {
     clrscr();
     VeKhungCoTieuDe(2, 1, 118, 28, "HIEU CHINH LOP TIN CHI");
     int maloptc;
@@ -343,34 +343,7 @@ static void FormHieuChinhLTC(DS_LTC &dsltc, treeMH root) {
         HienThongBaoThanhCong("Da cap nhat LTC.");
 }
 
-// ============================================================================
-// MENU CHÍNH — Chức năng (a)
-// ============================================================================
-void MenuMoLopTinChi(DS_LTC &dsltc, treeMH root) {
-    const char *items[5] = {
-        "1. Mo lop tin chi moi                        ",
-        "2. Xoa lop tin chi                           ",
-        "3. Hieu chinh lop tin chi                    ",
-        "4. In danh sach lop tin chi                  ",
-        "5. Quay lai                                  "
-    };
-    while (true) {
-        clrscr();
-        VeKhungCoTieuDe(2, 1, 118, 28, "QUAN LY LOP TIN CHI (Chuc nang a)");
-        gotoxy(30, 5);
-        SetColor(MAU_VANG_SANG);
-        printf("Tong so LTC: %d", dsltc.n);
-        SetColor(MAU_TRANG);
-        int chon = XuLyMenu(30, 8, items, 5);
-        if (chon == -1 || chon == 4) return;
-        switch (chon) {
-            case 0: FormThemLTC(dsltc, root); break;
-            case 1: FormXoaLTC(dsltc); break;
-            case 2: FormHieuChinhLTC(dsltc, root); break;
-            case 3: InDSLopTinChi(dsltc, root); break;
-        }
-    }
-}
+
 
 // ============================================================================
 // CHỨC NĂNG (h) — HUỶ LTC TỰ ĐỘNG KHI SỐ SV ĐĂNG KÝ < SOSVMIN

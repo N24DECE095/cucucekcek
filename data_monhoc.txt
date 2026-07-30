@@ -1,24 +1,25 @@
-30
-INF503|Lap trinh Mobile|2|1
-INF302|Co so du lieu|3|1
-ENG102|Anh van 2|3|0
-CHE101|Hoa hoc dai cuong|2|1
-ENG101|Anh van 1|3|0
-INF201|Nhap mon lap trinh|2|1
-ENG201|Anh van chuyen nganh|2|0
-INF301|Cau truc du lieu va giai thuat|3|1
-INF403|Ky thuat lap trinh|2|1
-INF401|He dieu hanh|3|1
-INF303|Lap trinh huong doi tuong|3|1
-INF402|Mang may tinh|3|1
-INF501|Cong nghe phan mem|3|1
-INF404|Nhap mon tri tue nhan tao|3|1
-INF502|Lap trinh Web|2|1
-MAT104|Xac suat thong ke|3|0
-INF602|Khoa luan tot nghiep|0|5
-INF505|Do hoa may tinh|3|1
+31
 INF504|An toan thong tin|3|1
+INF303|Lap trinh huong doi tuong|3|1
+ENG201|Anh van chuyen nganh|2|0
+ENG101|Anh van 1|3|0
+CHE101|Hoa hoc dai cuong|2|1
+ENG102|Anh van 2|3|0
+INF301|Cau truc du lieu va giai thuat|3|1
+INF201|Nhap mon lap trinh|2|1
+INF302|Co so du lieu|3|1
+INF404|Nhap mon tri tue nhan tao|3|1
+INF402|Mang may tinh|3|1
+INF401|He dieu hanh|3|1
+INF403|Ky thuat lap trinh|2|1
+INF502|Lap trinh Web|2|1
+INF501|Cong nghe phan mem|3|1
+INF503|Lap trinh Mobile|2|1
+MAT104|Xac suat thong ke|3|0
+INT001|Toan|10|1
 INF601|Do an chuyen nganh|0|3
+INF505|Do hoa may tinh|3|1
+INF602|Khoa luan tot nghiep|0|5
 MAT102|Giai tich 2|3|0
 MAT101|Giai tich 1|3|0
 MAT103|Dai so tuyen tinh|3|0

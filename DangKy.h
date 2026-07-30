@@ -2,45 +2,50 @@
 #define DANGKY_H
 
 #include "CauTruc.h"
+#include "MonHoc.h"
+#include "LopTinChi.h"
 #include "SinhVien.h"
-#include "Loptinchi.h"
-#include "Monhoc.h"
+#include "GiaoDien.h"
 
-//==================== KI?M TRA ====================
+//=====================================================
+// QU?N LÝ ÐANG KÝ
+//=====================================================
 
-// ki?m tra sinh viên có t?n t?i
-bool SinhVienTonTai(DS_LOP &dslop,
-                    const string &masv);
-
-// sinh viên dã dang ký l?p tín ch? chua
-bool DaDangKyLTC(Loptinchi *ltc,
-                 const string &masv);
-
-//==================== ÐANG KÝ ====================
-
-bool DangKyLopTinChi(DS_LTC &dsltc,
-                     DS_LOP &dslop,
-                     int maloptc,
-                     const string &masv);
-
-bool HuyDangKyLopTinChi(DS_LTC &dsltc,
-                        int maloptc,
+// Tìm sinh viên dã dang ký trong 1 l?p tín ch?
+PTRDK TimDangKyTheoMASV(PTRDK First,
                         const string &masv);
 
-//==================== CH?C NANG B ====================
+// Thêm dang ký
+bool DangKyLopTinChi(Loptinchi &ltc,
+                     const string &masv);
 
+// H?y dang ký
+bool HuyDangKyLopTinChi(Loptinchi &ltc,
+                        const string &masv);
+
+// Ð?m s? sinh viên dang ký (không tính dã h?y)
+int DemSVDangKy(PTRDK First);
+
+// Gi?i phóng danh sách dang ký
+void GiaiPhongDSDangKy(PTRDK &First);
+
+//=====================================================
+// CH?C NANG (b)
+//=====================================================
+
+// In danh sách SV dã dang ký theo:
+// Niên khóa - H?c k? - Mã MH - Nhóm
 void InDSSVDangKy(DS_LTC &dsltc,
                   DS_LOP &dslop,
-                  treeMH root,
-                  const string &nienkhoa,
-                  int hocky,
-                  const string &mamh,
-                  int nhom);
+                  treeMH root);
 
-//==================== MENU ====================
+//=====================================================
+// CH?C NANG (g)
+//=====================================================
 
-void MenuDangKyHocPhan(DS_LTC &dsltc,
-                       DS_LOP &dslop,
-                       treeMH root);
+// Ðang ký l?p tín ch?
+void MenuDangKyLopTinChi(DS_LTC &dsltc,
+                         DS_LOP &dslop,
+                         treeMH root);
 
 #endif

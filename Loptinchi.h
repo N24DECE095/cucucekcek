@@ -49,11 +49,13 @@ int   DemSVDangKy_KyCaHuy(PTRDK First);
 // Giải phóng DSLK đăng ký
 void  GiaiPhongDSDK(PTRDK &First);
 
+// ===================== FORMS LỚP TÍN CHỈ =====================
+void  FormThemLTC(DS_LTC &dsltc, treeMH root);
+void  FormXoaLTC(DS_LTC &dsltc);
+void  FormHieuChinhLTC(DS_LTC &dsltc, treeMH root);
+
 // ===================== IN =====================
 void  InDSLopTinChi(DS_LTC &ds, treeMH root);
-
-// ===================== MENU CHÍNH — Chức năng (a) =====================
-void  MenuMoLopTinChi(DS_LTC &dsltc, treeMH root);
 
 // ===================== CHỨC NĂNG (h) =====================
 void  HuyLopTinChiTuDong(DS_LTC &dsltc);

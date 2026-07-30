@@ -71,7 +71,4 @@ void   GiaiPhongCayMH(treeMH &root);
 // (khai báo ở đây, cài đặt trong Loptinchi.cpp vì cần DS_LTC)
 bool   MonHocDangDuocDung(DS_LTC &dsLtc, const string &mamh);
 
-// ===================== MENU CHÍNH — Chức năng (e) & (f) =====================
-void   MenuQuanLyMonhoc(treeMH &root, DS_LTC &dsLtc);
-
 #endif // MONHOC_H

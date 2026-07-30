@@ -7,9 +7,16 @@
 #include "Loptinchi.h"
 #include "SinhVien.h"
 
-void NhapDiem(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root);
-void InBangDiemMonHoc(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root);
-void InBangDiemTrungBinhTheoLop(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root);
-void InBangDiemTongKetTheoLop(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root);
+// ===================== QUẢN LÝ ĐIỂM =====================
+void NhapDiemLTC(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root);
+void InBangDiemLTC(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root);
+void InBangDiemTrungBinhTheoLop(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root); // Chức năng k
+void InBangDiemTongKetTheoLop(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root);   // Chức năng l
 
-#endif
+// Menu con Quản Lý Điểm
+void VeMenuDiem(int x, int y, int viTriChon);
+int  XuLyMenuDiem();
+void MenuQuanLyDiem(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH root);
+
+#endif // QUANLYDIEM_H
+

@@ -8,6 +8,7 @@
 #define GIAODIEN_H
 
 #include "mylib.h"
+#include "CauTruc.h"
 
 // ===================== HẰNG SỐ MÀU =====================
 #define MAU_DEN 0
@@ -84,5 +85,30 @@ bool TrangSau(PhanTrang &pt);
 int  LayViTriBatDau(PhanTrang &pt);
 int  LayViTriKetThuc(PhanTrang &pt);
 void HienThiThongTinTrang(PhanTrang &pt, int x, int y);
+
+void VeMenuMonHoc(int x, int y, int viTriChon);
+int  XuLyMenuMonHoc();
+void MenuMonHoc(treeMH &root, DS_LTC &ds_ltc);
+
+void VeMenuLopTinChi(int x, int y, int viTriChon);
+int  XuLyMenuLopTinChi();
+void MenuLopTinChi(DS_LTC &ds_ltc, treeMH root);
+
+void VeMenuSinhVien(int x, int y, int viTriChon);
+int  XuLyMenuSinhVien();
+void MenuSinhVien(DS_LOP &ds_lop);
+
+void VeMenuLop(int x, int y, int viTriChon);
+int  XuLyMenuLop();
+void MenuLop(DS_LOP &ds_lop);
+
+// ===================== GIAO DIỆN GIẢNG VIÊN =====================
+void VeNutGiangVien(int x, int y, int width, int height, const char *label, bool isHover);
+void VeAsciiArtGiangVien(int x, int y);
+void VeFooterGiangVien(int y = 27);
+void VeMenuGiangVien(int viTriChon);
+int  XuLyPhimGiangVien(int &viTriChon);
+int  XuLyMenuGiangVien();
+void HienMenuGiangVien(DS_LTC &ds_ltc, DS_LOP &ds_lop, treeMH &root);
 
 #endif // GIAODIEN_H

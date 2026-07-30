@@ -7,6 +7,7 @@
 #include "XuLyFile.h"
 #include "Monhoc.h"
 #include "Loptinchi.h"
+#include "SinhVien.h"
 #include <fstream>
 
 // ============================================================================
@@ -142,14 +143,83 @@ void DocFileLTC(DS_LTC &ds, const char *file) {
 }
 
 // ============================================================================
-// MASTER — gộp 2 file
+// GHI / ĐỌC DS_LOP — mỗi Lớp 1 dòng header + N dòng SinhVien
 // ============================================================================
-void LuuTatCa(treeMH root, DS_LTC &dsLtc) {
-    LuuFileMonhoc(root);
-    LuuFileLTC(dsLtc);
+void LuuFileLop(DS_LOP &ds, const char *file) {
+    ofstream f(file);
+    if (!f.is_open()) return;
+    f << ds.n << "\n";
+    for (int i = 0; i < ds.n; i++) {
+        Lop *lop = ds.nodes[i];
+        if (lop == NULL) continue;
+        int soSV = DemSinhVien(lop->dssv);
+        f << lop->MALOP << "|" << lop->TENLOP << "|" << soSV << "\n";
+        for (PTRSV p = lop->dssv; p != NULL; p = p->next) {
+            f << p->sv.MASV << "|" << p->sv.HO << "|"
+              << p->sv.TEN  << "|" << p->sv.PHAI << "|"
+              << p->sv.SODT << "\n";
+        }
+    }
+    f.close();
 }
 
-void DocTatCa(treeMH &root, DS_LTC &dsLtc) {
+void DocFileLop(DS_LOP &ds, const char *file) {
+    GiaiPhongDSLop(ds);
+    KhoiTaoDSLop(ds);
+    ifstream f(file);
+    if (!f.is_open()) return;
+    int n;
+    f >> n;
+    f.ignore();
+    for (int i = 0; i < n; i++) {
+        string line;
+        if (!getline(f, line)) break;
+        string tok[5];
+        int nt;
+        SplitLine(line, tok, 5, nt);
+        if (nt < 3) continue;
+
+        Lop lop;
+        lop.MALOP  = tok[0];
+        lop.TENLOP = tok[1];
+        int soSV   = atoi(tok[2].c_str());
+        lop.dssv   = NULL;
+
+        ThemLop(ds, lop);
+        Lop *pLop = LayLop(ds, lop.MALOP);
+        if (pLop == NULL) continue;
+
+        for (int k = 0; k < soSV; k++) {
+            string svLine;
+            if (!getline(f, svLine)) break;
+            string svTok[6];
+            int nsv;
+            SplitLine(svLine, svTok, 6, nsv);
+            if (nsv < 5) continue;
+            Sinhvien sv;
+            sv.MASV  = svTok[0];
+            sv.HO    = svTok[1];
+            sv.TEN   = svTok[2];
+            sv.PHAI  = svTok[3];
+            sv.SODT  = svTok[4];
+            sv.MALOP = lop.MALOP;
+            ThemSinhVien(*pLop, sv);
+        }
+    }
+    f.close();
+}
+
+// ============================================================================
+// MASTER — gộp 3 file
+// ============================================================================
+void LuuTatCa(treeMH root, DS_LTC &dsLtc, DS_LOP &dsLop) {
+    LuuFileMonhoc(root);
+    LuuFileLTC(dsLtc);
+    LuuFileLop(dsLop);
+}
+
+void DocTatCa(treeMH &root, DS_LTC &dsLtc, DS_LOP &dsLop) {
     DocFileMonhoc(root);
     DocFileLTC(dsLtc);
+    DocFileLop(dsLop);
 }
